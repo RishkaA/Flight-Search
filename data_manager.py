@@ -1,6 +1,20 @@
 import requests
+import os
 
-SHEETY_ENDPOINT = "https://api.sheety.co/fa42f62de5a8f220dff9fafa72f746e5/flightDeals/sheet1"
+BEARER = os.environ.get("BEARER")
+USER = os.environ.get("SHEETY_USER")
+
+SHEETY_URL = "https://api.sheety.co"
+
+PROJECT_NAME = "flightDeals"
+TAB_NAME = "price"
+
+sheety_endpoint = f"{SHEETY_URL}/{USER}/{PROJECT_NAME}/{TAB_NAME}"
+
+header = {
+      "Authorization": f"Bearer {BEARER}",
+      "Content-Type": "application/json",
+    }
 
 class DataManager:
 
@@ -8,20 +22,23 @@ class DataManager:
         self.destination_data = {}
 
     def get_sheety_data(self):
-        response = requests.get(url=SHEETY_ENDPOINT)
+        response = requests.get(url=sheety_endpoint, headers=header)
         data = response.json()
-        self.destination_data = data["sheet1"]
+        self.destination_data = data["price"]
         return self.destination_data
 
     def update_destination_codes(self):
-        for row in self.destination_data:
-            new_data = {
-                "sheet1": {
-                    "iataCode": row["iataCode"]
-                }
-            }
-            response = requests.put(
-                url=f"{SHEETY_ENDPOINT}/{row['id']}",
-                json=new_data
-            )
-            print(response.text)
+      
+      for row in self.destination_data:
+          new_data = {
+              "price": {
+                  "iataCode": row["iataCode"]
+              }
+          }
+          response = requests.put(
+              url=f"{sheety_endpoint}/{row['id']}",
+              headers=header,
+              json=new_data
+          )
+          print(response.text)
+
